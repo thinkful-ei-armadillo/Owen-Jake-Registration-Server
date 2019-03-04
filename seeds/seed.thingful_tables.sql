@@ -1,3 +1,5 @@
+--psql -U postgres -d thingful -f ./seeds/seed.thingful_tables.sql
+
 BEGIN;
 
 TRUNCATE
