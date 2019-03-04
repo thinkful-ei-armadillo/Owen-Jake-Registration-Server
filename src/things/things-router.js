@@ -6,6 +6,7 @@ const thingsRouter = express.Router()
 
 thingsRouter
   .route('/')
+  
   .get((req, res, next) => {
     ThingsService.getAllThings(req.app.get('db'))
       .then(things => {

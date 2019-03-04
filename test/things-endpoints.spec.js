@@ -87,11 +87,13 @@ describe('Things Endpoints', function() {
 
   describe.only(`GET /api/things/:thing_id`, () => {
     context(`Given no things`, () => {
+      beforeEach('insert things', () =>
+      helpers.seedThingsTables(db, testUsers))
       it(`responds with 404`, () => {
         const thingId = 123456
         return supertest(app)
           .get(`/api/things/${thingId}`)
-          .set('Authorization', helpers.makeAuthHeader(testUser[0].id))
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .expect(404, { error: `Thing doesn't exist` })
       })
     })
@@ -116,9 +118,16 @@ describe('Things Endpoints', function() {
 
         return supertest(app)
           .get(`/api/things/${thingId}`)
-          .expect(200, expectedThing)
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.title).to.eql(expectedThing.title)
+            const actualDate = new Date(res.body.date_created).toLocaleString();
+            const expectedDate = new Date(expectedThing.date_created).toLocaleString('en', {timeZone: 'UTC'})
+          expect(actualDate).to.equal(expectedDate);
       })
     })
+  })
 
     context(`Given an XSS attack thing`, () => {
       const testUser = helpers.makeUsersArray()[1]
@@ -138,6 +147,7 @@ describe('Things Endpoints', function() {
       it('removes XSS attack content', () => {
         return supertest(app)
           .get(`/api/things/${maliciousThing.id}`)
+          .set('Authorization', helpers.makeAuthHeader(testUser))
           .expect(200)
           .expect(res => {
             expect(res.body.title).to.eql(expectedThing.title)
